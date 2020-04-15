@@ -46,7 +46,7 @@ struct AppConfig {
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
-            .route("/sym", web::get().to(radiation_response))
+            .route("/sim", web::get().to(radiation_response))
     })
     .bind("127.0.0.1:8088")?
     .run()
