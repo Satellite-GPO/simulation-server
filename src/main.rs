@@ -1,54 +1,55 @@
-//! monolith file for now
+use std::{
+    net,
+};
 
 use actix_web::{
     web, App, 
     HttpServer,
-    HttpResponse, HttpRequest, 
-    Responder
 };
-use url_query::URLquery;
 use serde::{Serialize, Deserialize};
-use serde_json::json;
+use argh::FromArgs;
+
+use simulation_server::handlers;
 
 #[derive(Serialize, Deserialize)]
 struct RadiationResponse {
     radiation: f64,
 }
 
-async fn radiation_response(request: HttpRequest) -> impl Responder {
-    // TODO: rewrite and handle errors
-    let query = request.uri().query();
-    let result = match query {
-        Some(args) => {
-            let query = URLquery::from(args);
-            let r_type = query["type"].as_ref()
-                                    .expect("No type provided in query!");
-            let latitude:f64 = query["lat"].as_ref()
-                                    .expect("No latitude provided in query!").parse().expect("No f64 latitude provided in query!");
-            let longtitude:f64 = query["long"].as_ref()
-                                    .expect("No longtitude provided in query!")
-                                    .parse()
-                                    .expect("No f64 longtude provided in query!");
-            latitude + longtitude as f64 // TODO: rewrite. It's only for demo
-        },
-        None => -1f64,
-    };
-    let r = RadiationResponse{radiation: result};
-
-    HttpResponse::Ok().json(format!("{}", serde_json::to_string(&r).unwrap())) // unwrap due to handeled errors
-}
-
+/// Set up server
+#[derive(FromArgs)]
 struct AppConfig {
-    bind_to: String,
+    /// ip address client connects to
+    #[argh(option, short = 'a')]
+    address: String,
+
+    /// port client connects to
+    #[argh(option, short = 'p', default = "80")]
+    port: u16,
+
+    // TODO: add log configuration, default is stdout for now
 }
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
+    let config: AppConfig = argh::from_env();
+    let ip = match config.address.parse::<net::IpAddr>() {
+        Ok(x) => x,
+        Err(msg) => {
+            println!("{:?}", msg);
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidInput, "Couldn't parse ip address!"
+            ));
+        }
+    };
+
+    let sock_addr = net::SocketAddr::new(ip, config.port);
+
     HttpServer::new(|| {
         App::new()
-            .route("/sim", web::get().to(radiation_response))
+            .route("/sim/arloste", web::get().to(handlers::do_arloste))
     })
-    .bind("127.0.0.1:8088")?
+    .bind(sock_addr)?
     .run()
     .await
 }
