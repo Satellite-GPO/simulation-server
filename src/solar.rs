@@ -68,34 +68,27 @@ pub fn integration_factors_etc(doy: u32, latitude: f64) -> ([f64; 4], [f64; 2]) 
 // TODO: irradiance for whole year depends on 2 temperatures because
 // we think how to implement temperature properly
 pub fn ground_radiation_for_year(latitude: f64, t_min: f64, t_max: f64) -> Vec<f64> {
-    let daily_t_min: Vec<_> = (0..366).map(|_| t_min).collect();
-    let daily_t_max: Vec<_> = (0..366).map(|_| t_max).collect();
-
-    let mut s_factors = Vec::with_capacity(366);
-    let mut day_length = Vec::with_capacity(366);
-    let mut rad_above = Vec::with_capacity(366);
-    let mut daily_vap = Vec::with_capacity(366);
+    // TODO: there should be a bunch of arrays: 
+    // s_factors, day_length, rad_above, daily_vap, daily_t_min, daily_t_max
+    // but for now it's exceedingly ineffinient to store so much data as long
+    // as current routine calculates only on-ground radiation
+    
     let mut daily_solar_rad = Vec::with_capacity(366);
 
     for doy in 0..366 {
-        let (factors, mid) = integration_factors_etc(doy, latitude);
-        s_factors.push(factors);
-        day_length.push(mid[0]);
-        rad_above.push(mid[1]);
+        let (_, mid) = integration_factors_etc(doy, latitude);
+        let rad_above = mid[1];
 
-        daily_vap.push(
-            0.92 * 6.11 * (17.27 * t_min / (t_min + 237.3)).exp() // OR.CO.: 0.92: parameter may differ with time and location
-        );
+        let daily_vap = 0.92 * 6.11 * (17.27 * t_min / (t_min + 237.3)).exp(); // OR.CO.: 0.92: parameter may differ with time and location
 
-        let daily_dtair = daily_t_max[doy as usize]
-            - daily_t_min[doy as usize];
+        let daily_dtair = t_max - t_min;
 
         let f = if daily_dtair > 0.5 { daily_dtair } else { 0.5 };
 
         let p = 1.06
             * ( 1.0 - ( -0.06 * f.powf(1.25) ).exp() )
-            * ( 1.0 - 0.02 * daily_vap[doy as usize] );
-        daily_solar_rad.push(p * rad_above[doy as usize]); // OR.CO.: estimated daily solar radiation on the ground (MJ/m2/day)
+            * ( 1.0 - 0.02 * daily_vap);
+        daily_solar_rad.push(p * rad_above); // OR.CO.: estimated daily solar radiation on the ground (MJ/m2/day)
     }
 
     daily_solar_rad

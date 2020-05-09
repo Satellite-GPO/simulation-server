@@ -14,6 +14,8 @@ use serde::{Serialize, Deserialize};
 use url_query::UrlQuery;
 use super::solar;
 
+// TODO: think of adding this functionality to UrlQuery
+// TODO: fix up weird behavior when key does not exist
 fn get_of_type<'a, T>(query: &UrlQuery, name: &'a str) 
     -> Result<T, &'a str>
         where T: FromStr

@@ -1,22 +1,16 @@
-use std::{
-    net,
-};
+use std::net;
 
 use actix_web::{
-    web, App, 
+    web,
+    App, 
     HttpServer,
 };
-use serde::{Serialize, Deserialize};
+
 use argh::FromArgs;
 
 use simulation_server::handlers;
 
-#[derive(Serialize, Deserialize)]
-struct RadiationResponse {
-    radiation: f64,
-}
-
-/// Set up server
+/// Solar irradiance server
 #[derive(FromArgs)]
 struct AppConfig {
     /// ip address client connects to
