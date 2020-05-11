@@ -38,22 +38,12 @@ impl UrlQuery {
         -> Result<T, &'a str>
         where T: FromStr 
     {
-        match self.get(name).as_ref() {
-            Some(value) => {
-                match value {
-                    Some(raw) => {
-                        match raw.parse() {
-                            Ok(value) => Ok(value),
-                            Err(_) => Err("Error parsing value"),
-                        }
-                    },
-                    None => Err("No value mapped to given key")
-                }
-            },
-            None => {
-                Err("No key in query")
-            },
-        }
+        Ok(self.get(name)
+            .ok_or("No key in query")?
+            .ok_or("No value mapped to a given key")?
+            .parse()
+            .map_err(|_| "Error parsing value")?
+        )
     }
 }
 

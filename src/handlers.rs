@@ -21,7 +21,7 @@ pub struct YearIrradiance {
 // Original comments are marked with OR.CO.
 pub async fn do_arloste(request: HttpRequest) -> impl Responder {
     let mut log_stream = io::stdout();
-    let default_response = HttpResponse::Ok().json(format!("¯\\_(ツ)_/¯"));
+    let fallback_response = HttpResponse::Ok().json(format!("¯\\_(ツ)_/¯")); // TODO: think of another appropriate default fallback response
 
     let query = request.uri().query();
     let query = match query {
@@ -29,7 +29,7 @@ pub async fn do_arloste(request: HttpRequest) -> impl Responder {
         None => {
             log_stream.write("Nothing to handle: no request query!\n".as_bytes()).unwrap();
             log_stream.flush().unwrap();
-            return default_response;
+            return fallback_response;
         }
     };
 
@@ -42,7 +42,7 @@ pub async fn do_arloste(request: HttpRequest) -> impl Responder {
             };
             log_stream.write(output.as_bytes()).unwrap();
             log_stream.flush().unwrap();
-            return default_response;
+            return fallback_response;
         },
     };
 
@@ -55,7 +55,7 @@ pub async fn do_arloste(request: HttpRequest) -> impl Responder {
             };
             log_stream.write(output.as_bytes()).unwrap();
             log_stream.flush().unwrap();
-            return default_response;
+            return fallback_response;
         },
         
     };
@@ -69,7 +69,7 @@ pub async fn do_arloste(request: HttpRequest) -> impl Responder {
             };
             log_stream.write(output.as_bytes()).unwrap();
             log_stream.flush().unwrap();
-            return default_response;
+            return fallback_response;
         },
     };
 
@@ -82,7 +82,7 @@ pub async fn do_arloste(request: HttpRequest) -> impl Responder {
             };
             log_stream.write(output.as_bytes()).unwrap();
             log_stream.flush().unwrap();
-            return default_response;
+            return fallback_response;
         },
     };
 
@@ -97,7 +97,7 @@ pub async fn do_arloste(request: HttpRequest) -> impl Responder {
             };
             log_stream.write(output.as_bytes()).unwrap();
             log_stream.flush().unwrap();
-            return default_response;
+            return fallback_response;
         },
     };
 
@@ -110,7 +110,7 @@ pub async fn do_arloste(request: HttpRequest) -> impl Responder {
             };
             log_stream.write(output.as_bytes()).unwrap();
             log_stream.flush().unwrap();
-            return default_response;
+            return fallback_response;
         },
     };
     
@@ -124,7 +124,7 @@ pub async fn do_arloste(request: HttpRequest) -> impl Responder {
             Ok(x) => x,
             Err(_) => {
                 log_stream.write("Couldn't write json!".as_bytes()).unwrap();
-                return default_response;
+                return fallback_response;
             },
         }
     ))
