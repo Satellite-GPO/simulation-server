@@ -15,20 +15,24 @@ use url_query::UrlQuery;
 use super::solar;
 
 // TODO: think of adding this functionality to UrlQuery
-// TODO: fix up weird behavior when key does not exist
 fn get_of_type<'a, T>(query: &UrlQuery, name: &'a str) 
     -> Result<T, &'a str>
         where T: FromStr
 {
-    match query[name].as_ref() {
-        Some(raw) => {
-            match raw.parse() {
-                Ok(value) => Ok(value),
-                Err(_) => Err("Error parsing value"),
+    match query.get(name).as_ref() {
+        Some(value) => {
+            match value {
+                Some(raw) => {
+                    match raw.parse() {
+                        Ok(value) => Ok(value),
+                        Err(_) => Err("Error parsing value"),
+                    }
+                },
+                None => Err("No value mapped to given key")
             }
         },
         None => {
-            Err("No value in query")
+            Err("No key in query")
         },
     }
 }

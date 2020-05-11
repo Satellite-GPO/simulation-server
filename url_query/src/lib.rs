@@ -21,8 +21,21 @@ impl UrlQuery {
             })
             .collect())
     }
+
+    /// Returns option of option with following semantics: if the outer option
+    /// is None then there is no such key in query. If the inner option is
+    /// None then the key presents in the query without any value:
+    /// ...&key&...
+    pub fn get(&self, key: &str) -> Option<Option<String>> {
+        match self.0.get(key) {
+            Some(x) => Some(x.as_ref().cloned()),
+            None => None,
+        }
+    }
 }
 
+
+// TODO: rewrite in a correct manner
 impl Index<&str> for UrlQuery {
     type Output = Option<String>;
 
