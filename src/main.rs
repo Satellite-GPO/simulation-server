@@ -6,33 +6,20 @@ use actix_web::{
     HttpServer,
 };
 
-use argh::FromArgs;
-
-use simulation_server::handlers;
-
-/// Solar irradiance server
-#[derive(FromArgs)]
-struct AppConfig {
-    /// ip address client connects to
-    #[argh(option, short = 'a')]
-    address: String,
-
-    /// port client connects to
-    #[argh(option, short = 'p', default = "80")]
-    port: u16,
-
-    // TODO: add log configuration, default is stdout for now
-}
+use simulation_server::{
+    handlers,
+    config::ServerConfig,
+};
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
-    let config: AppConfig = argh::from_env();
-    let ip = match config.address.parse::<net::IpAddr>() {
+    let config: ServerConfig = argh::from_env();
+    let ip: net::IpAddr = match config.address.parse() {
         Ok(x) => x,
         Err(msg) => {
             println!("{:?}", msg);
             return Err(std::io::Error::new(
-                std::io::ErrorKind::InvalidInput, "Couldn't parse ip address!"
+                std::io::ErrorKind::InvalidInput, "Couldnt parse IP address!"
             ));
         }
     };
