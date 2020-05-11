@@ -1,6 +1,7 @@
 use std::{
     collections::BTreeMap,
     ops::Index,
+    str::FromStr
 };
 
 pub struct UrlQuery(BTreeMap<String, Option<String>>);
@@ -30,6 +31,28 @@ impl UrlQuery {
         match self.0.get(key) {
             Some(x) => Some(x.as_ref().cloned()),
             None => None,
+        }
+    }
+
+    pub fn get_of_type<'a, T>(&self, name: &'a str) 
+        -> Result<T, &'a str>
+        where T: FromStr 
+    {
+        match self.get(name).as_ref() {
+            Some(value) => {
+                match value {
+                    Some(raw) => {
+                        match raw.parse() {
+                            Ok(value) => Ok(value),
+                            Err(_) => Err("Error parsing value"),
+                        }
+                    },
+                    None => Err("No value mapped to given key")
+                }
+            },
+            None => {
+                Err("No key in query")
+            },
         }
     }
 }
