@@ -1,9 +1,8 @@
 use std::{
+    collections::HashMap,
     ops::Index,
     str::FromStr
 };
-
-use hashbrown::HashMap;
 
 pub struct UrlQuery(HashMap<String, Option<String>>);
 
