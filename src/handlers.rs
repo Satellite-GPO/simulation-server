@@ -1,7 +1,6 @@
 use std::{
     io,
     io::Write,
-    str::FromStr,
 };
 
 use actix_web::{
@@ -14,25 +13,6 @@ use serde::{Serialize, Deserialize};
 use url_query::UrlQuery;
 use super::solar;
 
-// TODO: think of adding this functionality to UrlQuery
-// TODO: fix up weird behavior when key does not exist
-fn get_of_type<'a, T>(query: &UrlQuery, name: &'a str) 
-    -> Result<T, &'a str>
-        where T: FromStr
-{
-    match query[name].as_ref() {
-        Some(raw) => {
-            match raw.parse() {
-                Ok(value) => Ok(value),
-                Err(_) => Err("Error parsing value"),
-            }
-        },
-        None => {
-            Err("No value in query")
-        },
-    }
-}
-
 #[derive(Serialize, Deserialize)]
 pub struct YearIrradiance {
     data: Vec<f64>,
@@ -41,7 +21,7 @@ pub struct YearIrradiance {
 // Original comments are marked with OR.CO.
 pub async fn do_arloste(request: HttpRequest) -> impl Responder {
     let mut log_stream = io::stdout();
-    let default_response = HttpResponse::Ok().json(format!("¯\\_(ツ)_/¯"));
+    let fallback_response = HttpResponse::Ok().json(format!("¯\\_(ツ)_/¯")); // TODO: think of another appropriate default fallback response
 
     let query = request.uri().query();
     let query = match query {
@@ -49,11 +29,11 @@ pub async fn do_arloste(request: HttpRequest) -> impl Responder {
         None => {
             log_stream.write("Nothing to handle: no request query!\n".as_bytes()).unwrap();
             log_stream.flush().unwrap();
-            return default_response;
+            return fallback_response;
         }
     };
 
-    let latitude = match get_of_type::<f64>(&query, "lat") {
+    let latitude = match query.get_of_type::<f64>("lat") {
         Ok(x) if -90.0 <= x && x <= 90.0 => x.to_radians(),
         res => {
             let output = match res {
@@ -62,53 +42,11 @@ pub async fn do_arloste(request: HttpRequest) -> impl Responder {
             };
             log_stream.write(output.as_bytes()).unwrap();
             log_stream.flush().unwrap();
-            return default_response;
+            return fallback_response;
         },
     };
 
-    let longtitude = match get_of_type::<f64>(&query, "long") {
-        Ok(x) if -180.0 <= x && x <= 180.0 => x,
-        res => {
-            let output = match res {
-                Ok(x) => format!("Longtitude {} doesn't fit\n", x),
-                Err(msg) => format!("{}\n", msg),
-            };
-            log_stream.write(output.as_bytes()).unwrap();
-            log_stream.flush().unwrap();
-            return default_response;
-        },
-        
-    };
-
-    let slope = match get_of_type::<f64>(&query, "slope") {
-        Ok(x) if 0.0 <= x && x <= 180.0 => x.to_radians(),
-        res => {
-            let output = match res {
-                Ok(x) => format!("Slope {} doesn't fit\n", x),
-                Err(msg) => format!("{}\n", msg),
-            };
-            log_stream.write(output.as_bytes()).unwrap();
-            log_stream.flush().unwrap();
-            return default_response;
-        },
-    };
-
-    let aspect = match get_of_type::<f64>(&query, "aspect") {
-        Ok(x) if 0.0 <= x && x <= 360.0 => x.to_radians(),
-        res => {
-            let output = match res {
-                Ok(x) => format!("Aspect {} doesn't fit\n", x),
-                Err(msg) => format!("{}\n", msg),
-            };
-            log_stream.write(output.as_bytes()).unwrap();
-            log_stream.flush().unwrap();
-            return default_response;
-        },
-    };
-
-    // no viewshed for now
-
-    let t_min: f64 = match get_of_type(&query, "tmin") {
+    let t_min: f64 = match query.get_of_type::<f64>("tmin") {
         Ok(x) if -273.15 <= x && x <= 100.0 => x,
         res => {
             let output = match res {
@@ -117,11 +55,11 @@ pub async fn do_arloste(request: HttpRequest) -> impl Responder {
             };
             log_stream.write(output.as_bytes()).unwrap();
             log_stream.flush().unwrap();
-            return default_response;
+            return fallback_response;
         },
     };
 
-    let t_max: f64 = match get_of_type(&query, "tmax") {
+    let t_max: f64 = match query.get_of_type::<f64>("tmax") {
         Ok(x) if t_min < x && x <= 100.0 => x,
         res => {
             let output = match res {
@@ -130,7 +68,7 @@ pub async fn do_arloste(request: HttpRequest) -> impl Responder {
             };
             log_stream.write(output.as_bytes()).unwrap();
             log_stream.flush().unwrap();
-            return default_response;
+            return fallback_response;
         },
     };
     
@@ -144,7 +82,7 @@ pub async fn do_arloste(request: HttpRequest) -> impl Responder {
             Ok(x) => x,
             Err(_) => {
                 log_stream.write("Couldn't write json!".as_bytes()).unwrap();
-                return default_response;
+                return fallback_response;
             },
         }
     ))
