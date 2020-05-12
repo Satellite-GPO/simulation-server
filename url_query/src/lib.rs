@@ -1,10 +1,11 @@
 use std::{
-    collections::BTreeMap,
     ops::Index,
     str::FromStr
 };
 
-pub struct UrlQuery(BTreeMap<String, Option<String>>);
+use hashbrown::HashMap;
+
+pub struct UrlQuery(HashMap<String, Option<String>>);
 
 impl UrlQuery {
     pub fn from(query_str: &str) -> Self {
@@ -34,8 +35,7 @@ impl UrlQuery {
         }
     }
 
-    pub fn get_of_type<'a, T>(&self, name: &'a str) 
-        -> Result<T, &'a str>
+    pub fn get_of_type<'a, T>(&self, name: &'a str) -> Result<T, &'a str>
         where T: FromStr 
     {
         Ok(self.get(name)
