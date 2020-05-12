@@ -2,6 +2,8 @@
 
 The server calculates solar irradiance under given conditions.
 
+You can find query reference at the repository's wiki.
+
 ## Installation and use
 
 You can install the server with
