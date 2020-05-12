@@ -46,48 +46,6 @@ pub async fn do_arloste(request: HttpRequest) -> impl Responder {
         },
     };
 
-    let longtitude = match query.get_of_type::<f64>("long") {
-        Ok(x) if -180.0 <= x && x <= 180.0 => x,
-        res => {
-            let output = match res {
-                Ok(x) => format!("Longtitude {} doesn't fit\n", x),
-                Err(msg) => format!("{}\n", msg),
-            };
-            log_stream.write(output.as_bytes()).unwrap();
-            log_stream.flush().unwrap();
-            return fallback_response;
-        },
-        
-    };
-
-    let slope = match query.get_of_type::<f64>("slope") {
-        Ok(x) if 0.0 <= x && x <= 180.0 => x.to_radians(),
-        res => {
-            let output = match res {
-                Ok(x) => format!("Slope {} doesn't fit\n", x),
-                Err(msg) => format!("{}\n", msg),
-            };
-            log_stream.write(output.as_bytes()).unwrap();
-            log_stream.flush().unwrap();
-            return fallback_response;
-        },
-    };
-
-    let aspect = match query.get_of_type::<f64>("aspect") {
-        Ok(x) if 0.0 <= x && x <= 360.0 => x.to_radians(),
-        res => {
-            let output = match res {
-                Ok(x) => format!("Aspect {} doesn't fit\n", x),
-                Err(msg) => format!("{}\n", msg),
-            };
-            log_stream.write(output.as_bytes()).unwrap();
-            log_stream.flush().unwrap();
-            return fallback_response;
-        },
-    };
-
-    // no viewshed for now
-
     let t_min: f64 = match query.get_of_type::<f64>("tmin") {
         Ok(x) if -273.15 <= x && x <= 100.0 => x,
         res => {
