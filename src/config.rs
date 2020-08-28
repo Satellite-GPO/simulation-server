@@ -11,5 +11,9 @@ pub struct ServerConfig {
     #[argh(option, short = 'p', default = "80")]
     pub port: u16,
 
+    /// wheather to enable deprecated features or not (GET request for now)
+    #[argh(switch)]
+    pub deprecated: bool
+
     // TODO: add log configuration, default is stdout for now
 }

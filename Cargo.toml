@@ -12,7 +12,10 @@ url_query = {path = "./url_query"}
 
 #external crates
 actix-rt = "1.0"
-actix-web = "2.0"
+actix-web = "3.0.0-alpha.3"
+actix-files = "0.3.0-alpha.1"
+
+futures = "0.3.5"
 
 argh = "0.1.3"
 
